@@ -1,0 +1,196 @@
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Picker</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        input[type="color"]{
+            border: none;
+            width: 100px;
+            height: 100px;
+            float: left;
+            margin-right: 20px;
+            cursor: pointer;
+        }
+
+        input[type="text"] {
+            float: right;
+            width: 100%;
+            text-align: right;
+            margin-top: 5px;
+            border: 5px solid #ccc;
+            border-radius: 3px;
+            outline: none;
+            padding: 4px;
+            text-transform: uppercase;
+        }
+
+        #displayColor {
+            width: 100px;
+            height: 100px;
+            background-color: black;
+            border: 5px solid #efefef;
+            float: left;
+            border-radius: 2px;
+        }
+
+        .colorbox {
+            position: absolute;
+            width: 220px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        button {
+            float: right;
+            padding: 6px;
+            border: none;
+            cursor: pointer;
+            background-color: #ccc;
+            margin: 5px;
+            color: #555;
+        }
+
+        .colors {
+            position: absolute;
+            display: block;
+            width: 100%;
+            height: 24px;
+            top: 100%;
+        }
+
+        .color {
+            height: 100%;
+            display: block;
+            float: left;
+        }
+
+        .colors {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="colorbox">
+        <div class="color-box"></div>
+        <input type="color" id="color" onchange="colorVal()" value="#000000">
+        <div id="displayColor"></div>
+        <input type="text" id="colorValue" onchange="colorFocus()" onkeyup="colorFocus()" value="#000000">
+        <button onclick="copy()" style="float: left;">Copy</button>
+        <button onclick="paste()" data-paste="#colorValue" style="float: left;">Paste</button>
+        <button onclick="addColor()">Add to list</button>
+        <div class="colors"></div>
+        <button onclick="clearAll()">Delete All / Clear</button>
+    </div>
+
+
+    <script>
+        var colorListArray = [];
+        var x = colorListArray.length;
+        function startUp(){
+            if(localStorage.getItem("colorList") !== "null"){
+                colorListArray = localStorage.getItem("colorList").split(",");
+            } else {
+                colorListArray = [];
+            }
+
+            var x = colorListArray.length;
+
+
+            for(i=0; i<colorListArray.length; i++){
+                var textValue = document.getElementById("colorValue").value;
+
+                var colorBox = document.querySelector(".color-box");
+                var Colors = document.querySelector(".colors");
+                var colElms = document.getElementsByClassName("color");
+                var colorElem = document.createElement("div");
+                colorElem.setAttribute("class", "color");
+                colorElem.setAttribute("onclick", "colorStops(event)");
+                colorElem.setAttribute("data-id", i);
+                colorBox.appendChild(Colors);
+                Colors.appendChild(colorElem);
+                colorElem.style.backgroundColor = colorListArray[i];
+                for(j=0; j<colElms.length; j++){
+                    colElms[j].style.width = 100 / colElms.length + "%";
+                }
+            }
+        }
+
+        function colorVal(){
+            var colorValue = document.getElementById("color").value;
+            var displayColor = document.getElementById("displayColor");
+            var text = document.getElementById("colorValue");
+            text.value = colorValue;
+            displayColor.style.backgroundColor = colorValue;
+        }
+        function colorFocus(){
+            var textValue = document.getElementById("colorValue").value;
+            var color = document.getElementById("color").value;
+            displayColor.style.backgroundColor = textValue;
+        }
+
+        function addColor(){
+            x = colorListArray.length;
+            
+            var textValue = document.getElementById("colorValue").value;
+
+            var colorBox = document.querySelector(".color-box");
+            var Colors = document.querySelector(".colors");
+            var colElms = document.getElementsByClassName("color");
+            var colorElem = document.createElement("div");
+            colorElem.setAttribute("class", "color");
+            colorElem.setAttribute("onclick", "colorStops(event)");
+            colorElem.setAttribute("data-id", x);
+            colorBox.appendChild(Colors);
+            Colors.appendChild(colorElem);
+            colorElem.style.backgroundColor = textValue;
+            colorListArray.push(textValue);
+            for(i=0; i<colElms.length; i++){
+                colElms[i].style.width = 100 / colElms.length + "%";
+            }
+
+            if(typeof(Storage) !== "undefined"){
+                localStorage.setItem("colorList", colorListArray);
+            } else {
+                alert("Sorry, your browser does not support Web Storage...");
+            }
+        }
+
+        function colorStops(evt){
+            var colElms = document.getElementsByClassName("color");
+            var currentColStop = evt.currentTarget.getAttribute("data-id");
+            var text = document.getElementById("colorValue");
+            var displayColor = document.getElementById("displayColor");
+            text.value = colorListArray[currentColStop];
+            displayColor.style.backgroundColor = colorListArray[currentColStop];
+        }
+
+        function copy(){
+            var text = document.getElementById("colorValue");
+            text.select();
+            text.setSelectionRange(0, 999);
+            navigator.clipboard.writeText(text.value.toUpperCase());
+        }
+
+        function paste(){
+            var text = document.getElementById("colorValue");
+            navigator.clipboard.readText().then((n)=>{
+                text.value = n;
+                displayColor.style.backgroundColor = n;
+            });
+        }
+
+        function clearAll(){
+            colorListArray = localStorage.setItem("colorList", "null");
+            location.reload();
+        }
+
+        startUp();
+
+    </script>
+</body>
